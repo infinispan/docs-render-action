@@ -1,0 +1,38 @@
+name: Render Asciidoc documentation to standalone HTML
+
+description: >-
+  Renders .asciidoc documents with Ruby asciidoctor, including the asciidoctor-diagram (PlantUML) and
+  asciidoctor-tabs extensions. Produces a sibling .html file for each document, matching the output of
+  `make documentation` in infinispan-operator.
+
+inputs:
+  docs_path:
+    description: Directory containing the .asciidoc documents to render (searched recursively).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Ruby
+      uses: actions/setup-ruby@e932e7af67fc4a8fc77bd86b744acd4e42fe3543 # v1.1.3
+      with:
+        ruby-version: '3.4'
+
+    - name: Install asciidoctor and extensions
+      shell: bash
+      run: |
+        set -euo pipefail
+        gem install --no-document asciidoctor -v 2.0.26
+        gem install --no-document asciidoctor-diagram -v 3.2.1
+        gem install --no-document asciidoctor-diagram-plantuml
+        gem install --no-document asciidoctor-tabs -v 1.0.0.beta.6
+
+    - name: Render documents to HTML
+      shell: bash
+      run: |
+        set -euo pipefail
+        while IFS= read -r -d '' f; do
+          echo "::group::Rendering $f"
+          asciidoctor --require asciidoctor-diagram --require asciidoctor-tabs "$f"
+          echo "::endgroup::"
+        done < <(find "${{ inputs.docs_path }}" -name '*.asciidoc' -print0)
