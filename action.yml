@@ -1,0 +1,49 @@
+name: Render Asciidoc documentation to standalone HTML
+
+description: >-
+  Renders .asciidoc documents with Ruby asciidoctor, including the asciidoctor-diagram (PlantUML) and
+  asciidoctor-tabs extensions. Produces a sibling .html file for each document, matching the output of
+  `make documentation` in infinispan-operator.
+
+inputs:
+  docs_path:
+    description: Directory containing the .asciidoc documents to render (searched recursively).
+    required: true
+  plantuml_version:
+    description: Version of the PlantUML jar used by asciidoctor-diagram to render [plantuml] blocks.
+    required: false
+    default: '1.2026.8'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Ruby
+      uses: actions/setup-ruby@b007fae6f1ffbe3a51c00a6df6f5ff01184d5340 # v1
+      with:
+        ruby-version: '3.4'
+
+    - name: Install asciidoctor and extensions
+      shell: bash
+      run: |
+        set -euo pipefail
+        gem install --no-document asciidoctor -v 2.0.26
+        gem install --no-document asciidoctor-diagram -v 3.2.1
+        gem install --no-document asciidoctor-tabs -v 1.0.0.beta.6
+
+    - name: Download PlantUML jar
+      shell: bash
+      run: |
+        set -euo pipefail
+        JAR="${RUNNER_TEMP}/plantuml-${INPUT_plantuml_version}.jar"
+        curl -fsSL -o "$JAR" "https://github.com/plantuml/plantuml/releases/download/v${INPUT_plantuml_version}/plantuml-${INPUT_plantuml_version}.jar"
+
+    - name: Render documents to HTML
+      shell: bash
+      run: |
+        set -euo pipefail
+        JAR="${RUNNER_TEMP}/plantuml-${INPUT_plantuml_version}.jar"
+        while IFS= read -r -d '' f; do
+          echo "::group::Rendering $f"
+          DIAGRAM_PLANTUML_CLASSPATH="$JAR" asciidoctor --require asciidoctor-diagram --require asciidoctor-tabs "$f"
+          echo "::endgroup::"
+        done < <(find "${INPUT_docs_path}" -name '*.asciidoc' -print0)

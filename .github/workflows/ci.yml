@@ -1,0 +1,24 @@
+name: Render sample docs
+
+on: [push, pull_request]
+
+jobs:
+  render-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Render sample docs with this action
+        uses: .
+        with:
+          docs_path: examples
+
+      - name: Verify rendered output
+        run: |
+          set -euo pipefail
+          grep -q 'language-yaml'  examples/sample.html
+          grep -q 'language-bash'  examples/sample.html
+          grep -q '<img src="sample-diagram.svg"' examples/sample.html
+          [ -s examples/sample-diagram.svg ]
+          grep -q 'tablist'        examples/sample.html

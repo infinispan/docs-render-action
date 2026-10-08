@@ -1,0 +1,75 @@
+= Docs Render Action Sample
+docs-render-action maintainers[]
+
+:source-highlighter: highlight.js
+:plantuml-theme: cerulean
+
+This document exercises every feature supported by the action so it can be used as a CI smoke test.
+
+== Highlighted source blocks
+
+With `source-highlighter` set to `highlight.js`, code blocks carry client-side highlighting language classes.
+
+[source,yaml,options="nowrap",subs=attributes+]
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sample-config-map
+data:
+  key: "value"
+----
+
+[source,bash,options="nowrap"]
+----
+oc apply -f config-map.yaml
+----
+
+== PlantUML diagrams
+
+[plantuml, target=sample-diagram, format=svg, align=center, subs="attributes+", theme={plantuml-theme}]
+----
+@startuml
+skinparam defaultFontName sans-serif
+skinparam shadowing false
+component "Cluster 1" as C1
+package "Namespace" as ns {
+    component "Pod 1" as P1
+}
+C1 --> ns : manages
+P1 <--> C1 : connects to
+@enduml
+----
+
+== Tabs
+
+[tabs]
+====
+XML::
++
+[source,xml,options="nowrap"]
+----
+<infinispan>
+    <cache-container name="default">
+        <distributed-cache name="sample"/>
+    </cache-container>
+</infinispan>
+----
+
+YAML::
++
+[source,yaml,options="nowrap"]
+----
+name: default
+distributedCache:
+  - name: sample
+----
+
+JSON::
++
+[source,json,options="nowrap"]
+----
+{ "name": "default", "distributedCache": [ { "name": "sample" } ] }
+----
+
+====
