@@ -18,7 +18,7 @@ runs:
   using: composite
   steps:
     - name: Set up Ruby
-      uses: actions/setup-ruby@b007fae6f1ffbe3a51c00a6df6f5ff01184d5340 # v1
+      uses: actions/setup-ruby@e932e7af67fc4a8fc77bd86b744acd4e42fe3543 # v1.1.3
       with:
         ruby-version: '3.4'
 
